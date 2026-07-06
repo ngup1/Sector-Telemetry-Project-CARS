@@ -2,6 +2,7 @@
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Threading;
 
 namespace SectorTelemetry;
 
@@ -32,34 +33,40 @@ public class Program
                 size,
                 MemoryMappedFileAccess.Read);
 
-            accessor.ReadArray(0, buffer, 0, buffer.Length);
+            while (true)
+            {
+                accessor.ReadArray(0, buffer, 0, buffer.Length);
 
-            var data = ByteArrayToStruct<SharedMemoryPartial>(buffer);
+                var data = ByteArrayToStruct<SharedMemoryPartial>(buffer);
 
-            Console.WriteLine($"Opened mapping {mapName}");
-            Console.WriteLine($"Read {buffer.Length} bytes");
-            Console.WriteLine($"mVersion: {data.mVersion}");
-            Console.WriteLine($"mBuildVersionNumber: {data.mBuildVersionNumber}");
-            Console.WriteLine($"mGameState: {data.mGameState}");
-            Console.WriteLine($"mSessionState: {data.mSessionState}");
-            Console.WriteLine($"mRaceState: {data.mRaceState}");
-            Console.WriteLine($"mViewedParticipantIndex: {data.mViewedParticipantIndex}");
-            Console.WriteLine($"mNumParticipants: {data.mNumParticipants}");
-            Console.WriteLine($"mCarName: {data.mCarName}");
-            Console.WriteLine($"mTrackLocation: {data.mTrackLocation}");
-            Console.WriteLine($"mTrackVariation: {data.mTrackVariation}");
-            Console.WriteLine($"mSpeed: {data.mSpeed:F2} m/s");
-            Console.WriteLine($"mSpeed: {data.mSpeed * 3.6f:F2} km/h");
-            Console.WriteLine($"mRpm: {data.mRpm:F0}");
-            Console.WriteLine($"mGear: {data.mGear}");
-            Console.WriteLine($"mThrottle: {data.mThrottle:F3}");
-            Console.WriteLine($"mBrake: {data.mBrake:F3}");
-            Console.WriteLine($"mSteering: {data.mSteering:F3}");
-            Console.WriteLine($"mUnfilteredThrottle: {data.mUnfilteredThrottle:F3}");
-            Console.WriteLine($"mUnfilteredBrake: {data.mUnfilteredBrake:F3}");
-            Console.WriteLine($"mUnfilteredSteering: {data.mUnfilteredSteering:F3}");
-            Console.WriteLine($"mFuelLevel: {data.mFuelLevel:F3}");
-            Console.WriteLine($"mFuelCapacity: {data.mFuelCapacity:F2}");
+                Console.WriteLine($"Opened mapping {mapName}");
+                Console.WriteLine($"Read {buffer.Length} bytes");
+                Console.WriteLine($"mVersion: {data.mVersion}");
+                Console.WriteLine($"mBuildVersionNumber: {data.mBuildVersionNumber}");
+                Console.WriteLine($"mGameState: {data.mGameState}");
+                Console.WriteLine($"mSessionState: {data.mSessionState}");
+                Console.WriteLine($"mRaceState: {data.mRaceState}");
+                Console.WriteLine($"mViewedParticipantIndex: {data.mViewedParticipantIndex}");
+                Console.WriteLine($"mNumParticipants: {data.mNumParticipants}");
+                Console.WriteLine($"mCarName: {data.mCarName}");
+                Console.WriteLine($"mTrackLocation: {data.mTrackLocation}");
+                Console.WriteLine($"mTrackVariation: {data.mTrackVariation}");
+                Console.WriteLine($"mSpeed: {data.mSpeed:F2} m/s");
+                Console.WriteLine($"mSpeed: {data.mSpeed * 3.6f:F2} km/h");
+                Console.WriteLine($"mRpm: {data.mRpm:F0}");
+                Console.WriteLine($"mGear: {data.mGear}");
+                Console.WriteLine($"mThrottle: {data.mThrottle:F3}");
+                Console.WriteLine($"mBrake: {data.mBrake:F3}");
+                Console.WriteLine($"mSteering: {data.mSteering:F3}");
+                Console.WriteLine($"mUnfilteredThrottle: {data.mUnfilteredThrottle:F3}");
+                Console.WriteLine($"mUnfilteredBrake: {data.mUnfilteredBrake:F3}");
+                Console.WriteLine($"mUnfilteredSteering: {data.mUnfilteredSteering:F3}");
+                Console.WriteLine($"mFuelLevel: {data.mFuelLevel:F3}");
+                Console.WriteLine($"mFuelCapacity: {data.mFuelCapacity:F2}");
+
+                Thread.Sleep(100);
+            }
+           
         }
         catch (Exception ex)
         {
