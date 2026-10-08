@@ -1,91 +1,49 @@
-﻿using System;
-using System.IO.MemoryMappedFiles;
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
-using System.Threading;
+using SectorTelemetry.Services;
+using SectorTelemetry.Sources;
 
-namespace SectorTelemetry;
+// Usage:
+//   dotnet run                      live AMS2 shared memory (Windows), dashboard on http://localhost:5080
+//   dotnet run -- --mock            simulated race (any OS)
+//   dotnet run -- --urls http://0.0.0.0:5080   also serve to other devices on the LAN (tablet, second PC)
 
-[SupportedOSPlatform("windows")]
-public class Program
+bool useMock = args.Contains("--mock") || !OperatingSystem.IsWindows();
+
+var builder = WebApplication.CreateBuilder(args.Where(a => a != "--mock").ToArray());
+if (builder.Configuration["urls"] == null) builder.WebHost.UseUrls("http://localhost:5080");
+
+builder.Services.AddSingleton<TrackMapBuilder>();
+builder.Services.AddSingleton<TimingTracker>();
+builder.Services.AddSingleton<DashboardHub>();
+builder.Services.AddSingleton<SettingsStore>();
+builder.Services.AddSingleton<TelemetryService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<TelemetryService>());
+if (useMock)
+    builder.Services.AddSingleton<ITelemetrySource, MockSource>();
+else if (OperatingSystem.IsWindows())
+    builder.Services.AddSingleton<ITelemetrySource, SharedMemorySource>();
+
+var app = builder.Build();
+
+app.UseWebSockets();
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+app.Map("/ws", async (HttpContext ctx, DashboardHub hub) =>
 {
-    public static void Main()
+    if (!ctx.WebSockets.IsWebSocketRequest)
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            Console.WriteLine("This app only runs on Windows.");
-            return;
-        }
-
-        const string mapName = "$pcars2$";
-
-        try
-        {
-            using var mmf = MemoryMappedFile.OpenExisting(
-                mapName,
-                MemoryMappedFileRights.Read);
-
-            int size = Marshal.SizeOf<SharedMemoryPartial>();
-            byte[] buffer = new byte[size];
-
-            using var accessor = mmf.CreateViewAccessor(
-                0,
-                size,
-                MemoryMappedFileAccess.Read);
-
-            while (true)
-            {
-                accessor.ReadArray(0, buffer, 0, buffer.Length);
-
-                var data = ByteArrayToStruct<SharedMemoryPartial>(buffer);
-
-                Console.WriteLine($"Opened mapping {mapName}");
-                Console.WriteLine($"Read {buffer.Length} bytes");
-                Console.WriteLine($"mVersion: {data.mVersion}");
-                Console.WriteLine($"mBuildVersionNumber: {data.mBuildVersionNumber}");
-                Console.WriteLine($"mGameState: {data.mGameState}");
-                Console.WriteLine($"mSessionState: {data.mSessionState}");
-                Console.WriteLine($"mRaceState: {data.mRaceState}");
-                Console.WriteLine($"mViewedParticipantIndex: {data.mViewedParticipantIndex}");
-                Console.WriteLine($"mNumParticipants: {data.mNumParticipants}");
-                Console.WriteLine($"mCarName: {data.mCarName}");
-                Console.WriteLine($"mTrackLocation: {data.mTrackLocation}");
-                Console.WriteLine($"mTrackVariation: {data.mTrackVariation}");
-                Console.WriteLine($"mSpeed: {data.mSpeed:F2} m/s");
-                Console.WriteLine($"mSpeed: {data.mSpeed * 3.6f:F2} km/h");
-                Console.WriteLine($"mRpm: {data.mRpm:F0}");
-                Console.WriteLine($"mGear: {data.mGear}");
-                Console.WriteLine($"mThrottle: {data.mThrottle:F3}");
-                Console.WriteLine($"mBrake: {data.mBrake:F3}");
-                Console.WriteLine($"mSteering: {data.mSteering:F3}");
-                Console.WriteLine($"mUnfilteredThrottle: {data.mUnfilteredThrottle:F3}");
-                Console.WriteLine($"mUnfilteredBrake: {data.mUnfilteredBrake:F3}");
-                Console.WriteLine($"mUnfilteredSteering: {data.mUnfilteredSteering:F3}");
-                Console.WriteLine($"mFuelLevel: {data.mFuelLevel:F3}");
-                Console.WriteLine($"mFuelCapacity: {data.mFuelCapacity:F2}");
-
-                Thread.Sleep(100);
-            }
-           
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
+        ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
+        return;
     }
+    using var socket = await ctx.WebSockets.AcceptWebSocketAsync();
+    await hub.RunAsync(socket, ctx.RequestAborted);
+});
 
-    private static T ByteArrayToStruct<T>(byte[] bytes) where T : struct
-    {
-        IntPtr ptr = Marshal.AllocHGlobal(bytes.Length);
+app.MapGet("/api/track", (TelemetryService t) => Results.Json(t.TrackSnapshot()));
+app.MapGet("/api/settings", (SettingsStore s) => Results.Json(s.Get()));
+app.MapPut("/api/settings", (SettingsPatch patch, SettingsStore s) => Results.Json(s.Update(patch)));
+app.MapGet("/api/car/{index:int}", (int index, TelemetryService t) =>
+    t.CarLaps(index) is { } laps ? Results.Json(laps) : Results.NotFound());
 
-        try
-        {
-            Marshal.Copy(bytes, 0, ptr, bytes.Length);
-            return Marshal.PtrToStructure<T>(ptr)!;
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(ptr);
-        }
-    }
-}
+app.Logger.LogInformation("Telemetry source: {Source}", useMock ? "mock" : "AMS2 shared memory");
+app.Run();

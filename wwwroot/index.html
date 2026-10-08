@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sector Telemetry</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">SECTOR<span>TELEMETRY</span></div>
+    <div id="session-type" class="pill">—</div>
+    <div class="track"><span id="track-name">Waiting for data</span><span id="track-variation"></span></div>
+    <div id="lap-counter" class="lap-counter"></div>
+    <div id="flag-chip" class="flag-chip" hidden></div>
+    <div id="weather" class="weather"></div>
+    <div id="conn" class="conn"><span class="dot"></span><span id="conn-text">Connecting…</span></div>
+    <a class="settings-link" href="settings.html">Settings</a>
+  </header>
+  <div id="flag-banner" class="flag-banner"></div>
+
+  <main class="layout">
+    <section class="panel tower-panel">
+      <div class="panel-head">
+        <h2>Timing</h2>
+        <div class="seg" id="gap-mode" role="group" aria-label="Gap mode">
+          <button data-mode="interval" class="on">Interval</button>
+          <button data-mode="leader">Leader</button>
+        </div>
+      </div>
+      <div class="tower-scroll">
+        <table id="tower" class="tower">
+          <thead>
+            <tr>
+              <th class="c-pos">P</th>
+              <th class="c-name">Driver</th>
+              <th class="c-gap" id="gap-head">Int</th>
+              <th class="c-time">Last</th>
+              <th class="c-time">Best</th>
+              <th class="c-sec">S1</th>
+              <th class="c-sec">S2</th>
+              <th class="c-sec">S3</th>
+              <th class="c-lap">Lap</th>
+              <th class="c-pit">Pit</th>
+              <th class="c-spd" id="spd-head">km/h</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel map-panel">
+      <div class="panel-head">
+        <h2>Track</h2>
+        <div class="map-tools">
+          <div class="seg" id="map-colour" role="group" aria-label="Car colours">
+            <button data-mode="team" class="on">Car</button>
+            <button data-mode="speed">Speed</button>
+            <button data-mode="delta">Δ vs you</button>
+          </div>
+          <button id="map-labels" class="icon-btn on" title="Show driver codes">ABC</button>
+          <button id="map-flip" class="icon-btn" title="Mirror map">⇋</button>
+          <button id="map-rotate" class="icon-btn" title="Rotate map 90°">⟳</button>
+        </div>
+      </div>
+      <div class="map-wrap">
+        <canvas id="map"></canvas>
+        <div id="map-msg" class="map-msg"></div>
+        <div id="map-legend" class="map-legend" hidden></div>
+        <aside id="focus" class="focus" hidden></aside>
+      </div>
+    </section>
+
+    <section class="panel car-panel" id="car-panel">
+      <div class="panel-head"><h2 id="car-title">Car</h2></div>
+      <div class="car-body">
+        <div class="delta-box">
+          <div class="delta-left">
+            <div class="label">Δ <span id="delta-ref">vs best</span></div>
+            <div class="seg" id="delta-mode" role="group" aria-label="Delta reference">
+              <button data-mode="best" class="on">Best</button>
+              <button data-mode="last">Last</button>
+            </div>
+          </div>
+          <div id="delta" class="delta">—</div>
+        </div>
+
+        <div class="cluster">
+          <div class="shift-lights" id="shift-lights"></div>
+          <div class="cluster-main">
+            <div class="speed"><span id="speed">0</span><small id="speed-unit">km/h</small></div>
+            <div class="gear" id="gear">N</div>
+            <div class="rpm"><span id="rpm">0</span><small>rpm</small></div>
+          </div>
+          <div class="rpm-bar"><div id="rpm-fill"></div></div>
+        </div>
+
+        <div class="badges" id="badges"></div>
+
+        <div class="timing-grid">
+          <div><label>Current</label><span id="t-current">—</span></div>
+          <div><label>Last</label><span id="t-last">—</span></div>
+          <div><label>Best</label><span id="t-best">—</span></div>
+          <div class="sec"><label>S1</label><span id="t-s1">—</span></div>
+          <div class="sec"><label>S2</label><span id="t-s2">—</span></div>
+          <div class="sec"><label>S3</label><span id="t-s3">—</span></div>
+        </div>
+
+        <div class="neighbours" id="neighbours"></div>
+
+        <div class="kv-grid">
+          <div class="kv wide">
+            <label>Fuel</label>
+            <div class="fuel-row"><div class="bar"><div id="fuel-fill"></div></div><span id="fuel-litres">—</span></div>
+            <small id="fuel-detail">—</small>
+          </div>
+          <div class="kv"><label>Brake bias</label><span id="bb">—</span></div>
+          <div class="kv"><label>TC / ABS</label><span id="tcabs">—</span></div>
+          <div class="kv"><label>Oil</label><span id="oil">—</span></div>
+          <div class="kv"><label>Water</label><span id="water">—</span></div>
+          <div class="kv"><label>Boost / ERS</label><span id="ers">—</span></div>
+          <div class="kv"><label>Wing F / R</label><span id="wings">—</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel laps-panel">
+      <div class="panel-head"><h2>Laps</h2><span class="sub" id="laps-sub"></span></div>
+      <div class="laps-scroll">
+        <table class="laps" id="laps">
+          <thead><tr><th>Lap</th><th>Time</th><th>S1</th><th>S2</th><th>S3</th><th>Fuel</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel traces-panel">
+      <div class="panel-head">
+        <h2>Traces</h2>
+        <span class="sub">Throttle / brake / clutch · 15 s</span>
+      </div>
+      <div class="trace-wrap"><canvas id="trace"></canvas><div class="trace-legend" id="trace-legend"></div></div>
+    </section>
+
+    <section class="panel tyres-panel">
+      <div class="panel-head"><h2>Tyres &amp; brakes</h2><span class="sub" id="compound"></span></div>
+      <div class="tyres" id="tyres"></div>
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

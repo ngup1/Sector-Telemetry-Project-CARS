@@ -1,11 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
-    <RootNamespace>Sector_Telemetry</RootNamespace>
+    <RootNamespace>SectorTelemetry</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Cached track outlines learned at runtime; never part of the build. -->
+    <Content Remove="tracks/**" />
+    <None Remove="tracks/**" />
+  </ItemGroup>
 
 </Project>

@@ -72,3 +72,13 @@ Testing/
 **/bin/*
 **/obj/*
 
+
+# .NET build output
+bin/
+obj/
+
+# Track outlines learned at runtime
+tracks/
+
+# Dashboard settings saved at runtime
+settings.json
