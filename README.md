@@ -4,25 +4,29 @@ A live, F1-style telemetry dashboard for Automobilista 2. It reads the game's sh
 
 ## Running
 
-**With AMS2 (Windows):** in game, set *Options → System → Shared Memory* to **Project CARS 2**, then:
+In AMS2, set *Options → System → Shared Memory* to **Project CARS 2**.
+
+**Desktop app (Windows):** unzip `Sector-Telemetry-win-x64.zip` and run `Sector-Telemetry.exe`. The dashboard opens in its own window and reads the game on the same PC. It needs the Microsoft Edge WebView2 runtime, which comes with Windows 10 and 11.
+
+**From source:**
 
 ```
-dotnet run
+dotnet run                    # desktop window, live game data (Windows)
+dotnet run -- --mock          # desktop window, simulated 20-car race (any OS)
+dotnet run -- --server        # no window; open http://localhost:5080 in a browser
+dotnet run -- --server --urls http://0.0.0.0:5080   # also viewable from a tablet or another PC on the network
 ```
 
-Open http://localhost:5080. To view it from a tablet or second PC on your network:
+For network viewing, allow port 5080 through Windows Firewall when prompted.
+
+**Building the package:**
 
 ```
-dotnet run -- --urls http://0.0.0.0:5080
+./publish.sh            # dist/Sector-Telemetry-win-x64.zip
+./publish.sh osx-arm64  # Apple Silicon Mac build
 ```
 
-(allow port 5080 through Windows Firewall when prompted).
-
-**Without the game (any OS):** a simulated 20-car race:
-
-```
-dotnet run -- --mock
-```
+Learned track maps and settings are stored per user in `%LOCALAPPDATA%\SectorTelemetry` (Windows) or `~/Library/Application Support/SectorTelemetry` (macOS).
 
 ## What's on the dashboard
 
@@ -50,13 +54,13 @@ Click **Settings** in the top bar (or open `/settings.html`) to choose:
 - **Speed:** km/h or mph
 - **Temperature:** °C or °F
 
-Changes apply immediately. They're saved on the telemetry server in `settings.json` beside the executable, so every screen viewing the dashboard (PC, tablet, second monitor) uses the same settings, and they survive restarts and cleared browser data.
+Changes apply immediately. They're saved by the app in `settings.json` in the app data folder, so every screen viewing the dashboard (PC, tablet, second monitor) uses the same settings, and they survive restarts and cleared browser data.
 
 ## How the derived data works
 
 | | |
 |---|---|
-| Track map | AMS2 has no track geometry. Each on-track car's world X/Z is averaged into 4 m buckets by lap distance, so the outline completes after about one lap with a full field. It's cached in `tracks/` beside the executable. |
+| Track map | AMS2 has no track geometry. Each on-track car's world X/Z is averaged into 4 m buckets by lap distance, so the outline completes after about one lap with a full field. It's cached in the app data folder. |
 | Gaps | Each car's (distance, time) history is recorded. The gap is how long ago the car ahead passed the point where the car behind is now, which is the same method F1 timing uses. Practice and qualifying use best-lap gaps instead. |
 | Sectors | Splits are taken when a car's sector changes. The game's own sector time is used when it agrees with the measured one to within 0.5 s. |
 | Live delta | Your current lap time is compared, at the same lap distance, against your best valid lap (sampled every 10 m). |

@@ -13,12 +13,12 @@ public sealed record SettingsPatch(
     [property: JsonPropertyName("tempUnit")] string? TempUnit);
 
 /// <summary>
-/// Dashboard display settings, stored in settings.json beside the executable so they apply to every
+/// Dashboard display settings, stored in settings.json in the app data folder so they apply to every
 /// device viewing the dashboard and survive browser data being cleared.
 /// </summary>
 public sealed class SettingsStore(ILogger<SettingsStore> logger)
 {
-    private static readonly string FilePath = Path.Combine(AppContext.BaseDirectory, "settings.json");
+    private static readonly string FilePath = Path.Combine(AppPaths.DataDir, "settings.json");
     private static readonly string[] SpeedUnits = ["kph", "mph"];
     private static readonly string[] TempUnits = ["c", "f"];
 
@@ -44,6 +44,7 @@ public sealed class SettingsStore(ILogger<SettingsStore> logger)
             _current = s;
             try
             {
+                Directory.CreateDirectory(AppPaths.DataDir);
                 File.WriteAllText(FilePath, JsonSerializer.Serialize(s, new JsonSerializerOptions { WriteIndented = true }));
             }
             catch (Exception ex)

@@ -82,3 +82,6 @@ tracks/
 
 # Dashboard settings saved at runtime
 settings.json
+
+# Packaged builds
+dist/

@@ -6,14 +6,14 @@ namespace SectorTelemetry.Services;
 /// <summary>
 /// AMS2 exposes no track geometry, so the outline is learned from where cars are: every on-track car's
 /// world X/Z is averaged into buckets by lap distance. With a full field the map is complete after about one lap.
-/// Maps are cached in ./tracks so later sessions on the same layout start with the full outline.
+/// Maps are cached in the app data folder so later sessions on the same layout start with the full outline.
 /// </summary>
 public sealed class TrackMapBuilder(ILogger<TrackMapBuilder> logger)
 {
     private const float BucketSize = 4f;
     private const int MaxSamplesPerBucket = 30;
     private const float OutlierDistance = 40f;
-    private static readonly string CacheDir = Path.Combine(AppContext.BaseDirectory, "tracks");
+    private static readonly string CacheDir = Path.Combine(AppPaths.DataDir, "tracks");
 
     private string _key = "";
     private float _trackLength;

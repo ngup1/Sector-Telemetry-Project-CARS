@@ -5,12 +5,24 @@
     <RootNamespace>SectorTelemetry</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Product>Sector Telemetry</Product>
+  </PropertyGroup>
+
+  <!-- Packaged desktop build: no console window behind the app on Windows. -->
+  <PropertyGroup Condition="$(RuntimeIdentifier.StartsWith('win'))">
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+
+  <!-- Single-file builds bundle the runtime and native webview library into the executable;
+       the dashboard (wwwroot) ships beside it. -->
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
+    <DebugType>none</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Cached track outlines learned at runtime; never part of the build. -->
-    <Content Remove="tracks/**" />
-    <None Remove="tracks/**" />
+    <PackageReference Include="Photino.NET" Version="4.0.16" />
   </ItemGroup>
 
 </Project>
