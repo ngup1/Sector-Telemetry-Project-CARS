@@ -8,7 +8,6 @@ namespace SectorTelemetry;
 
 // Usage:
 //   Sector-Telemetry                       desktop window, live AMS2 shared memory (Windows)
-//   Sector-Telemetry --mock                desktop window, simulated race (any OS)
 //   Sector-Telemetry --server              no window; dashboard in a browser at http://localhost:5080
 //   Sector-Telemetry --server --urls http://0.0.0.0:5080   also serve to other devices on the LAN
 public static class Program
@@ -19,11 +18,10 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        bool useMock = args.Contains("--mock") || !OperatingSystem.IsWindows();
         bool serverOnly = args.Contains("--server");
-        var hostArgs = args.Where(a => a is not ("--mock" or "--server")).ToArray();
+        var hostArgs = args.Where(a => a != "--server").ToArray();
 
-        var app = BuildApp(hostArgs, useMock, serverOnly, out string url);
+        var app = BuildApp(hostArgs, serverOnly, out string url);
 
         if (serverOnly)
         {
@@ -51,7 +49,7 @@ public static class Program
         }
     }
 
-    private static WebApplication BuildApp(string[] args, bool useMock, bool serverOnly, out string url)
+    private static WebApplication BuildApp(string[] args, bool serverOnly, out string url)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -81,10 +79,10 @@ public static class Program
         builder.Services.AddSingleton<SettingsStore>();
         builder.Services.AddSingleton<TelemetryService>();
         builder.Services.AddHostedService(sp => sp.GetRequiredService<TelemetryService>());
-        if (useMock)
-            builder.Services.AddSingleton<ITelemetrySource, MockSource>();
-        else if (OperatingSystem.IsWindows())
+        if (OperatingSystem.IsWindows())
             builder.Services.AddSingleton<ITelemetrySource, SharedMemorySource>();
+        else
+            builder.Services.AddSingleton<ITelemetrySource, UnavailableSource>();
 
         var app = builder.Build();
 
@@ -109,7 +107,7 @@ public static class Program
         app.MapGet("/api/car/{index:int}", (int index, TelemetryService t) =>
             t.CarLaps(index) is { } laps ? Results.Json(laps) : Results.NotFound());
 
-        app.Logger.LogInformation("Telemetry source: {Source}; dashboard at {Url}", useMock ? "mock" : "AMS2 shared memory", url);
+        app.Logger.LogInformation("Dashboard at {Url}", url);
         return app;
     }
 

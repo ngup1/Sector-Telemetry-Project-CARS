@@ -12,7 +12,6 @@ In AMS2, set *Options → System → Shared Memory* to **Project CARS 2**.
 
 ```
 dotnet run                    # desktop window, live game data (Windows)
-dotnet run -- --mock          # desktop window, simulated 20-car race (any OS)
 dotnet run -- --server        # no window; open http://localhost:5080 in a browser
 dotnet run -- --server --urls http://0.0.0.0:5080   # also viewable from a tablet or another PC on the network
 ```
@@ -69,7 +68,7 @@ Changes apply immediately. They're saved by the app in `settings.json` in the ap
 
 ```
 Ams2/       SharedMemory.h mirrored in C#; the parser is checked against the C struct (20,700 bytes)
-Sources/    live shared-memory reader (sequence-number torn-read protection) and mock race
+Sources/    live shared-memory reader (sequence-number torn-read protection)
 Services/   timing tracker, track map builder, snapshot builder, WebSocket hub, polling loop
 wwwroot/    dashboard and settings page (plain ES modules, no build step)
 ```
