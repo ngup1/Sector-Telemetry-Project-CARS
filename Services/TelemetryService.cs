@@ -14,6 +14,7 @@ public sealed class TelemetryService(
     TrackMapBuilder map,
     TimingTracker timing,
     DashboardHub hub,
+    SessionRecorder recorder,
     ILogger<TelemetryService> logger) : BackgroundService
 {
     private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(8);
@@ -53,6 +54,7 @@ public sealed class TelemetryService(
                 double dt = _latest == null ? 0 : Math.Min((now - _lastFrameAt).TotalSeconds, 0.25);
                 map.Update(frame);
                 timing.Update(frame, dt);
+                recorder.Record(frame, timing);
                 _latest = frame;
                 _lastFrameAt = now;
             }
@@ -68,11 +70,11 @@ public sealed class TelemetryService(
             bool inSession = _latest?.GameState is GameState.InGamePlaying or GameState.InGamePaused
                 or GameState.InGameInMenuTimeTicking or GameState.InGameReplay;
             if (_latest != null && inSession && !stale)
-                payload = DashboardSnapshot.Build(_latest, timing, map, source.Status);
+                payload = DashboardSnapshot.Build(_latest, timing, map, source.Status, recorder.Info());
             else if (_latest != null && !stale)
-                payload = DashboardSnapshot.StatusOnly($"{source.Status} - in menus");
+                payload = DashboardSnapshot.StatusOnly($"{source.Status} - in menus", recorder.Info());
             else
-                payload = DashboardSnapshot.StatusOnly(source.Status);
+                payload = DashboardSnapshot.StatusOnly(source.Status, recorder.Info());
         }
         hub.Broadcast(JsonSerializer.SerializeToUtf8Bytes(payload));
     }

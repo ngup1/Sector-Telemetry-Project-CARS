@@ -77,6 +77,7 @@ public static class Program
         builder.Services.AddSingleton<TimingTracker>();
         builder.Services.AddSingleton<DashboardHub>();
         builder.Services.AddSingleton<SettingsStore>();
+        builder.Services.AddSingleton<SessionRecorder>();
         builder.Services.AddSingleton<TelemetryService>();
         builder.Services.AddHostedService(sp => sp.GetRequiredService<TelemetryService>());
         if (OperatingSystem.IsWindows())
@@ -106,6 +107,13 @@ public static class Program
         app.MapPut("/api/settings", (SettingsPatch patch, SettingsStore s) => Results.Json(s.Update(patch)));
         app.MapGet("/api/car/{index:int}", (int index, TelemetryService t) =>
             t.CarLaps(index) is { } laps ? Results.Json(laps) : Results.NotFound());
+
+        app.MapGet("/api/recording", (SessionRecorder r) => Results.Json(r.Info()));
+        app.MapPost("/api/recording/start", (SessionRecorder r) => { r.Start(); return Results.Json(r.Info()); });
+        app.MapPost("/api/recording/stop", (SessionRecorder r) => { r.Stop(); return Results.Json(r.Info()); });
+        app.MapGet("/api/recordings", () => Results.Json(SessionRecorder.List()));
+        app.MapGet("/api/recordings/{name}", (string name) =>
+            SessionRecorder.PathOf(name) is { } path ? Results.File(path, "text/csv", name) : Results.NotFound());
 
         app.Logger.LogInformation("Dashboard at {Url}", url);
         return app;

@@ -87,6 +87,7 @@ export function plotStyle() {
     brake: v('--trace-brake', '#ff3333'),
     clutch: v('--trace-clutch', '#ffffff'),
     sectors: [v('--sector-1', '#ff3030'), v('--sector-2', '#00b0ff'), v('--sector-3', '#ffd000')],
+    series: [v('--series-1', '#3a8fe0'), v('--series-2', '#d86a26'), v('--series-3', '#b058e0'), v('--series-4', '#2fae6a')],
     mono: v('--plot-mono', "Consolas, 'Lucida Console', monospace"),
     sans: v('--plot-sans', 'Tahoma, Verdana, sans-serif'),
   };

@@ -141,6 +141,7 @@ function setConn(level, text) {
 }
 
 function onMessage(msg) {
+  renderRecording(msg.recording);
   if (msg.type === 'status') {
     setConn('warn', msg.status);
     $('map-msg').textContent = msg.status;
@@ -179,6 +180,26 @@ async function fetchTrack(version) {
     trackVersion = -1;
   }
 }
+
+// ---------------------------------------------------------------- recording
+
+let recording = null;
+
+function renderRecording(r) {
+  if (!r) return;
+  recording = r;
+  const btn = $('rec');
+  btn.classList.toggle('on', r.active);
+  $('rec-text').textContent = !r.active ? 'Record' : r.file ? `REC ${clock(r.seconds)}` : 'REC · waiting for session';
+  btn.title = r.active && r.file ? `Recording to ${r.file}` : "Record the viewed car's telemetry to a CSV file";
+}
+
+$('rec').addEventListener('click', async () => {
+  const action = recording?.active ? 'stop' : 'start';
+  try {
+    renderRecording(await (await fetch(`/api/recording/${action}`, { method: 'POST' })).json());
+  } catch { /* the next tick shows the real state */ }
+});
 
 // ---------------------------------------------------------------- header
 

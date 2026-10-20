@@ -5,7 +5,7 @@ namespace SectorTelemetry.Services;
 /// <summary>Builds the JSON-ready object pushed to dashboard clients on every tick.</summary>
 public static class DashboardSnapshot
 {
-    public static object Build(Ams2Frame f, TimingTracker timing, TrackMapBuilder map, string status)
+    public static object Build(Ams2Frame f, TimingTracker timing, TrackMapBuilder map, string status, object recording)
     {
         int n = Math.Min(f.NumParticipants, Ams2Constants.StoredParticipantsMax);
         bool isRace = f.SessionState is SessionState.Race or SessionState.FormationLap;
@@ -27,6 +27,7 @@ public static class DashboardSnapshot
         {
             type = "tick",
             status,
+            recording,
             clock = R(timing.Clock, 2),
             trackVersion = map.Version,
             trackKey = map.Key,
@@ -37,7 +38,7 @@ public static class DashboardSnapshot
         };
     }
 
-    public static object StatusOnly(string status) => new { type = "status", status };
+    public static object StatusOnly(string status, object recording) => new { type = "status", status, recording };
 
     private static object Session(Ams2Frame f, TimingTracker timing, int leader)
     {
