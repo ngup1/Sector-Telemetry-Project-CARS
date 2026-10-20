@@ -46,6 +46,18 @@ Learned track maps and settings are stored per user in `%LOCALAPPDATA%\SectorTel
 - **Tyres and brakes:** inner/middle/outer temperatures, core temperature, pressure, wear and brake temperature for each corner.
 - **Lap history:** your laps with sectors and fuel used.
 
+## Recording and session review
+
+Click **Record** in the dashboard's top bar to start saving telemetry to a CSV file, and click it again to stop. Recording starts when you're on track: there's one row per game frame (about 60 per second) for the car you're viewing, with speed, inputs, gear, RPM, G-forces, position, fuel, live delta, and per-corner tyre, brake and suspension data. Files are saved to the `recordings` folder in the app data folder and named after the date, track and car.
+
+Click **Analysis** (or open `/analysis.html`) to review one. Open a CSV from your device with **Open CSV…**, or pick one this app saved from **Saved recordings…**. Then:
+
+- The **lap list** shows each lap's time and gap to your best. Click a lap to view it, or **Whole session** to see everything against time.
+- Click a lap's **Ref** button to overlay it as a reference (dashed). The delta chart then shows the time gained or lost against it at each point of the lap.
+- Laps can be plotted against **Distance** (so corners line up) or **Time**.
+- Scroll to zoom, drag to pan, and double-click to reset. The cursor is synced across every chart and shown on the track map.
+- Choose which charts to show under **Channels**. Any other numeric column in the CSV can be shown too.
+
 ## Settings
 
 Click **Settings** in the top bar (or open `/settings.html`) to choose:

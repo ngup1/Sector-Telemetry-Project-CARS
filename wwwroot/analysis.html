@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Analysis · Sector Telemetry</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">SECTOR<span>TELEMETRY</span></div>
+    <div class="pill">ANALYSIS</div>
+    <div class="track"><span id="track-name">No recording loaded</span><span id="track-variation">Open a CSV to review a session</span></div>
+    <label class="settings-link file-btn" style="margin-left:auto">Open CSV…<input type="file" id="file" accept=".csv,text/csv" hidden></label>
+    <div class="saved"><select id="saved" title="Recordings saved by this app"><option value="">Saved recordings…</option></select></div>
+    <a class="settings-link" href="/">← Dashboard</a>
+  </header>
+
+  <main class="analysis">
+    <section class="panel an-laps-panel">
+      <div class="panel-head"><h2>Laps</h2><span class="sub" id="laps-sub"></span></div>
+      <div class="laps-scroll">
+        <table class="laps an-laps" id="an-laps">
+          <thead><tr><th>Lap</th><th>Time</th><th>Δ best</th><th title="Reference lap to compare against">Ref</th></tr></thead>
+          <tbody><tr><td colspan="4" class="empty">No laps</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel an-map-panel">
+      <div class="panel-head">
+        <h2>Track</h2>
+        <div class="map-tools">
+          <button id="an-flip" class="icon-btn" title="Mirror map">⇋</button>
+          <button id="an-rotate" class="icon-btn" title="Rotate map 90°">⟳</button>
+        </div>
+      </div>
+      <div class="map-wrap"><canvas id="an-map"></canvas></div>
+    </section>
+
+    <section class="panel an-channels-panel">
+      <div class="panel-head"><h2>Channels</h2></div>
+      <div class="an-channels" id="channels"></div>
+    </section>
+
+    <section class="panel an-charts-panel">
+      <div class="panel-head">
+        <h2 id="charts-title">Traces</h2>
+        <span class="sub an-hint">Scroll to zoom · drag to pan · double-click to reset</span>
+        <div class="seg" id="x-mode" role="group" aria-label="X axis">
+          <button data-mode="dist" class="on">Distance</button>
+          <button data-mode="time">Time</button>
+        </div>
+        <button id="reset-zoom" class="icon-btn" title="Show the whole lap or session">Reset</button>
+      </div>
+      <div class="an-charts" id="charts">
+        <div class="an-empty" id="charts-empty">Open a recorded CSV to see its traces.<br>Record one with the <b>Record</b> button on the dashboard.</div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/analysis.js"></script>
+</body>
+</html>
